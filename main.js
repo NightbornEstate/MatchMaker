@@ -69,11 +69,9 @@ bot.on("ready", () => {
                             msg.channel.send("Could not update: " + error + "\n" + output);
                         }
                     });
-                    restart();    
                 });
             }
         });
-        git();
     }
 
     commands.reg("%update", update, true, "Update the bot");
