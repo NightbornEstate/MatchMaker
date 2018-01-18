@@ -19,6 +19,7 @@ var ClassicAPI = riotApi.ClassicAPI;
  */
 var API = null;
 
+const RANK_UNRANCKED = -1;
 const RANK_BRONZE = 0;
 const RANK_SILVER = 1;
 const RANK_GOLD = 2;
@@ -27,6 +28,7 @@ const RANK_DIAMOND = 4;
 const RANK_MASTER = 5;
 const RANK_C = 6;
 
+const RANK_NAME_UNRANCKED = "Wood";
 const RANK_NAME_BRONZE = "Bronze";
 const RANK_NAME_SILVER = "Silver";
 const RANK_NAME_GOLD = "Gold";
@@ -35,6 +37,7 @@ const RANK_NAME_DIAMOND = "Diamond";
 const RANK_NAME_MASTER = "Master";
 const RANK_NAME_C = "Challenger";
 
+const COLOR_UNRANCKED = 0x995E40; // #995E40
 const COLOR_BRONZE = 0x7E7F3D; // #7E7F3D
 const COLOR_SILVER = 0x808080; // #808080
 const COLOR_GOLD = 0xFECA12; // #FECA12
@@ -43,6 +46,7 @@ const COLOR_DIAMOND = 0x9CD9EC; // #9CD9EC
 const COLOR_MASTER = 0xFF801C; // #FF801C
 const COLOR_C = 0xFF801C; // #FF801C
 
+const RANK_ICON_UNRANCKED = "https://ih0.redbubble.net/image.249430386.8898/flat,800x800,075,f.jpg";
 const RANK_ICON_BRONZE = "https://www.lol-smurfs.com/blog/wp-content/uploads/2017/01/bronzei.png";
 const RANK_ICON_SILVER = "https://www.lol-smurfs.com/blog/wp-content/uploads/2017/01/1_3.png";
 const RANK_ICON_GOLD = "https://www.lol-smurfs.com/blog/wp-content/uploads/2017/01/goldv.png";
@@ -119,6 +123,11 @@ function print_profile(author, channel) {
             rankName = RANK_NAME_C;
             rankColor = COLOR_C;
             break;
+        case RANK_UNRANCKED:
+            rankIcon = RANK_ICON_UNRANCKED;
+            rankName = RANK_NAME_UNRANCKED;
+            rankColor = COLOR_UNRANCKED;
+            break;
         default:
             rankName = null;
             rankColor = 0x000000; //#000000
@@ -166,7 +175,6 @@ function ign(msg) {
 
     if(API) {
         // verify with server
-
         API.getSummonerByName(tokens[1]).then((summoner) => {
             if(!user_data[msg.author.id]) {
                 user_data[msg.author.id] = {};
@@ -188,22 +196,34 @@ function ign(msg) {
     }else {
         // will manually get from user
 
-        if(tokens.length < 3) {
+        if(tokens.length < 2) {
             msg.reply("Usage: `.ign <ign> <rank name><rank number>`, rank name can be b/s/g/d/p/m/c and number can be from 1-5");
             return;
         }
+        
+        let name = "";
+        for(let i = 1; i < tokens.length - 1; i++) {
+            name += " " + tokens[i];
+        }
+        let lastToken = tokens[tokens.length - 1];
+
         let rankName, rankNumber;
 
-        let rank = tokens[2].toLowerCase();
-        let frm_sn = /(b|s|g|d|p|c|m)\s*([0-5])?/g;
-        let frm_ln = /(bronze|silver|gold|diamond|platinum|master|challenger)\s*([0-5])?/g;
+        let rank = lastToken.toLowerCase();
+        let frm_sn = /(b|s|g|d|p|c|m)([0-5])/g;
         let match = frm_sn.exec(rank);
         if(!match) {
-            match = frm_ln.exec(rank);
-            if(!match) {
-                msg.reply("Please enter your rank as <rank><number>");
-                return;
-            }
+
+            name = "";
+            for(let i = 1; i < tokens.length; i++) {
+                name += " " + tokens[i];
+            }    
+
+            user_data[msg.author.id].ign = name;
+            user_data[msg.author.id].rank = RANK_UNRANCKED;
+            user_data[msg.author.id].rankNumber = 5;
+            module.exports.save();
+            return;
         }
         rankName = match[1].toLowerCase();
         switch(rankName) {
@@ -242,11 +262,8 @@ function ign(msg) {
 
         rankNumber = match[2];
         if(!rankNumber) {
-            if(tokens.length < 4) {
-                msg.reply("Please enter your rank as <rank><number>");
-                return;
-            }
-            rankNumber = parseInt(tokens[3]);
+            msg.reply("Usage: `.ign <ign> <rank name><rank number>`, rank name can be b/s/g/d/p/m/c and number can be from 1-5");
+            return;
         }else {
             rankNumber = parseInt(rankNumber);
         }
@@ -260,7 +277,7 @@ function ign(msg) {
             user_data[msg.author.id] = {};
         }
 
-        user_data[msg.author.id].ign = tokens[1];
+        user_data[msg.author.id].ign = name;
         user_data[msg.author.id].rank = rankName;
         user_data[msg.author.id].rankNumber = rankNumber;
 
@@ -302,8 +319,9 @@ module.exports = {
             case RANK_GOLD: return RANK_NAME_GOLD;
             case RANK_PLATINUM: return RANK_NAME_PLATINUM;
             case RANK_DIAMOND: return RANK_NAME_DIAMOND;
-            case RANK_DIAMOND:  return RANK_NAME_MASTER;
+            case RANK_MASTER:  return RANK_NAME_MASTER;
             case RANK_C: return RANK_NAME_C;
+            case RANK_UNRANCKED:  return RANK_NAME_UNRANCKED;
             default: return null;
         }
     }
