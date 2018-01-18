@@ -7,6 +7,8 @@ const commands = require("./commands");
 const user = require("./user");
 const matchmaker = require("./matchmaker");
 
+const exec = require('child_process').exec;
+
 const bot = new Discord.Client();
 
 var botConfig = JSON.parse(fs.readFileSync('config/config.json', 'utf-8'));
@@ -28,11 +30,15 @@ if (process.platform === "win32") {
 
 process.on("SIGINT", function() {
     console.log("Disconnecting bot..")
+    saveAll();
+    process.exit();
+});
+
+function saveAll() {
     behaviour.save();
     user.save();
     bot.destroy();
-    process.exit();
-});
+}
 
 bot.on("ready", () => {
     if(onReady){
@@ -47,6 +53,30 @@ bot.on("ready", () => {
     commands.load();
     user.load(riotApiKey);
     matchmaker.load();
+
+    function update(msg) {
+        let git = exec('git pull', function(error, stdout, stderr) {
+            let output = "";
+            output += "git stdout: " + stdout + "\ngit stderr: " + stderr;
+            if(error != null) {
+                msg.channel.send("Could not update: " + error + "\n" + output);
+            }else {
+                saveAll();
+                msg.channel.send("Restarting...").then(() => {
+                    let restart = exec("pm2 restart matchmaker", function(error, stdout, stderr) {
+                        output += "pm2 stdout: " + stdout + "\npm2 stderr: " + stderr;
+                        if(error != null) {
+                            msg.channel.send("Could not update: " + error + "\n" + output);
+                        }
+                    });
+                    restart();    
+                });
+            }
+        });
+        git();
+    }
+
+    commands.reg("%update", update, true, "Update the bot");
 
     onReady = true;
 });
