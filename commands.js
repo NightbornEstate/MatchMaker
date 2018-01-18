@@ -47,7 +47,7 @@ module.exports = {
                         let found = false;
 
                         for(let i = 0; i < cmd.permissions.length; i++) {
-                            if(member.roles[cmd.permissions[i]]) {
+                            if(member.roles.find("id", cmd.permissions[i])) {
                                 found = true;
                                 break;
                             }
