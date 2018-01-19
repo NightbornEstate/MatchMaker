@@ -45,27 +45,7 @@ bot.on("ready", () => {
   user.load(riotApiKey);
   matchmaker.load();
 
-  function update(msg) {
-    let git = exec('git pull', function (error, stdout, stderr) {
-      let output = "";
-      output += "git stdout: " + stdout + "\ngit stderr: " + stderr;
-      if (error != null) {
-        msg.channel.send("Could not update: " + error + "\n" + output);
-      } else {
-        saveAll();
-        msg.channel.send("Restarting...")
-          .then(() => {
-            let restart = exec("pm2 restart matchmaker", function (error, stdout, stderr) {
-              output += "pm2 stdout: " + stdout + "\npm2 stderr: " + stderr;
-              if (error != null) {
-                msg.channel.send("Could not update: " + error + "\n" + output);
-              }
-            });
-          });
-      }
-    });
-  }
-  commands.reg("%update", update, true, "Update the bot");
+  commands.reg("%update", require("./helpers/gitUpdate"), true, "Update the bot");
   onReady = true;
 });
 bot.on('message', msg => {
