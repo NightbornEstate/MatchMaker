@@ -44,7 +44,7 @@ function createEmbed(game) {
   if (game.status == GAME_STATUS_WAITING) {
     embed.setTitle(name + " / Waiting...");
     embed.setColor(0x00FF00); // #00FF00
-    description += "\nTo join `.join " + name + "`\nTo Quit `.quit`"
+    description += "\nTo join `.join " + name + "`\nTo quit `.quit`"
   } else if (game.status == GAME_STATUS_STARTED) {
     embed.setTitle(name + " / Started");
     embed.setColor(0x0000FF); // #0000FF
