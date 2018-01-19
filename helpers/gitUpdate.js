@@ -4,7 +4,7 @@ const {promisify} = require('util');
 const execPromise = promisify(exec);
 const Discord = require("discord.js");
 
-module.exports = async() => {
+module.exports = async(msg) => {
   var output = 
     new Discord.RichEmbed()
     .setTitle("Git Restart")
