@@ -81,9 +81,9 @@ function createEmbed(game) {
       if (player) {
         let playerData = user.getUserData()[player.id];
         let playerName = playerData.ign + " (@" + getUsername(player) + ")";
-        embed.addField(i + ". " + playerName, user.getRank(playerData.rank) + " " + playerData.rankNumber, true);
+        embed.addField((i + 1) + ". " + playerName, user.getRank(playerData.rank) + " " + playerData.rankNumber, true);
       } else {
-        embed.addField(i + ". waiting...", "waiting...", true);
+        embed.addField((i + 1) + ". waiting...", "waiting...", true);
       }
     }
   }
