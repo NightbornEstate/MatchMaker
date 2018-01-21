@@ -64,14 +64,14 @@ function createEmbed(game) {
       let player = game.teamA[i];
       let playerData = user.getUserData()[player.id];
       let playerName = playerData.ign;
-      teamA += i + ". " + playerName + " / " + user.getRank(playerData.rank) + " " + playerData.rankNumber + "\n";
+      teamA += (i + 1) + ". " + playerName + " / " + user.getRank(playerData.rank) + " " + playerData.rankNumber + "\n";
     }
     let teamB = "";
     for (let i = 0; i < Math.ceil(playernumber / 2); i++) {
       let player = game.teamB[i];
       let playerData = user.getUserData()[player.id];
       let playerName = playerData.ign;
-      teamB += i + ". " + playerName + " / " + user.getRank(playerData.rank) + " " + playerData.rankNumber + "\n";
+      teamB += (i + 1) + ". " + playerName + " / " + user.getRank(playerData.rank) + " " + playerData.rankNumber + "\n";
     }
     embed.addField("Team A", teamA, true);
     embed.addField("Team B", teamB, true);
@@ -287,7 +287,7 @@ function doJoin(game, msg) {
   game.players.push(player);
   if (game.positions == game.players.length) {
     game.status = GAME_STATUS_PENDING;
-    let notify = "Game starting in 30seconds...";
+    let notify = "Game starting in 30 seconds...";
     for (let i = 0; i < game.positions; i++) {
       notify += " <@" + game.players[i].id + ">";
     }
