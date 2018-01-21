@@ -22,6 +22,7 @@ function getUsername(author) {
   }
   return name;
 }
+const EMBED_NEUTRAL = 0x36393e;
 const GAME_STATUS_WAITING = 0;
 const GAME_STATUS_STARTED = 1;
 const GAME_STATUS_PENDING = 2;
@@ -125,26 +126,15 @@ function matchMaking(players) {
  */
 function host(msg) {
   if (!user.getUserData(msg.author)) {
-    msg.reply("You must setup a profile before joining a game! Use the `.ign` to setup a profile")
-      .then((amsg) => {
-        msg.delete();
-        setTimeout(() => {
-          amsg.delete();
-        }, 3000);
-      });
+    msg.channel.send(new discord.RichEmbed().setDescription("You must set up a profile before joining a game! Use the `.ign` command to setup a profile").setColor(EMBED_NEUTRAL))
     return;
   }
   let host = msg.guild.members.find("id", msg.author.id);
   let description = "";
   let tokens = msg.content.split(" ");
   if (tokens.length < 3) {
-    msg.delete();
-    msg.reply("Usage `.host <name> <positions>`")
-      .then((amsg) => {
-        setTimeout(() => {
-          amsg.delete();
-        }, 2000);
-      });
+    // If there's not enough arguments then send a usage message and exit
+    msg.channel.send(new discord.RichEmbed().setDescription("Usage `.host <name> <positions>`").setColor(EMBED_NEUTRAL))
     return;
   }
   let name = tokens[1];
@@ -169,13 +159,8 @@ function host(msg) {
  */
 function autoJoin(msg) {
   if (!user.getUserData()[msg.author.id]) {
-    msg.reply("You must setup a profile before joining a game! Use the `.ign` to setup a profile")
-      .then((amsg) => {
-        msg.delete();
-        setTimeout(() => {
-          amsg.delete();
-        }, 3000);
-      });
+    // If we can't find their profile, tell them and then exit
+    msg.channel.send(new discord.RichEmbed().setDescription("You must set up a profile before joining a game! Use the `.ign` command to setup a profile").setColor(EMBED_NEUTRAL))
     return;
   }
   let player = msg.guild.members.find("id", msg.author.id);
@@ -204,11 +189,11 @@ function autoJoin(msg) {
     }
   }
   if (game == null) {
-    msg.channel.send("No active games found!");
+    msg.channel.send(new discord.RichEmbed().setDescription("I can't see any active games").setColor(EMBED_NEUTRAL))
   } else {
     doJoin(game, msg);
+    msg.channel.send(new discord.RichEmbed().setDescription("Joined " + game.name).setColor(EMBED_NEUTRAL))
   }
-  msg.delete();
   game.originalMsg.edit(createEmbed(game));
 }
 /**
@@ -217,64 +202,34 @@ function autoJoin(msg) {
  */
 function join(msg) {
   if (!user.getUserData()[msg.author.id]) {
-    msg.reply("You must setup a profile before joining a game! Use the `.ign` to setup a profile")
-      .then((amsg) => {
-        msg.delete();
-        setTimeout(() => {
-          amsg.delete();
-        }, 3000);
-      });
+    msg.channel.send(new discord.RichEmbed().setDescription("You must set up a profile before joining a game! Use the `.ign` command to setup a profile").setColor(EMBED_NEUTRAL))
     return;
   }
   let tokens = msg.content.split(" ");
   if (tokens.length < 2) {
-    msg.reply("Usage `.join <name>`")
-      .then((amsg) => {
-        msg.delete();
-        setTimeout(() => {
-          amsg.delete();
-        }, 2000);
-      });
+    msg.channel.send(new discord.RichEmbed().setTitle("Usage").setDescription("```.join <name>```").setColor(EMBED_NEUTRAL))
     return;
   }
   name = tokens[1];
   let player = msg.guild.members.find("id", msg.author.id);
   let game = games[name];
   if (!game) {
-    msg.delete();
-    msg.reply("No such game " + name)
-      .then((amsg) => {
-        setTimeout(() => {
-          amsg.delete();
-        }, 2000);
-      });
+    msg.channel.send(new discord.RichEmbed().setDescription("I can't find that game.").setColor(EMBED_NEUTRAL))
     return;
   }
   for (let key in games) {
     let g = games[key];
     if (g.players.includes(player)) {
-      msg.delete();
-      msg.reply("Already in game " + g.name)
-        .then((amsg) => {
-          setTimeout(() => {
-            amsg.delete();
-          }, 2000);
-        });
+      msg.channel.send(new discord.RichEmbed().setDescription("You're already in `" + g.name + "`").setColor(EMBED_NEUTRAL))
       return;
     }
   }
   if (game.status != GAME_STATUS_WAITING) {
-    msg.delete();
-    msg.reply("Game has already started!")
-      .then((amsg) => {
-        setTimeout(() => {
-          amsg.delete();
-        }, 2000);
-      });
+    msg.channel.send(new discord.RichEmbed().setDescription("That game has already started").setColor(EMBED_NEUTRAL))
     return;
   }
   doJoin(game, msg);
-  msg.delete();
+  msg.channel.send(new discord.RichEmbed().setDescription("Joined " + game.name).setColor(EMBED_NEUTRAL))
   game.originalMsg.edit(createEmbed(game));
 }
 /**
@@ -330,23 +285,11 @@ function quit(msg) {
     }
   }
   if (!game) {
-    msg.delete();
-    msg.reply("Not in a game")
-      .then((amsg) => {
-        setTimeout(() => {
-          amsg.delete();
-        }, 2000);
-      });
+    msg.channel.send(new discord.RichEmbed().setDescription("You're not in a game").setColor(EMBED_NEUTRAL))
     return;
   }
   if (game.status == GAME_STATUS_STARTED) {
-    msg.delete();
-    msg.reply("Game already started!")
-      .then((amsg) => {
-        setTimeout(() => {
-          amsg.delete();
-        }, 2000);
-      });
+    msg.channel.send(new discord.RichEmbed().setTitle("Usage").setDescription("Don't leave now! The game has already started.").setColor(EMBED_NEUTRAL))
     return;
   } else if (game.status == GAME_STATUS_PENDING) {
     clearTimeout(game.timeout);
@@ -363,24 +306,12 @@ function quit(msg) {
 function cancel(msg) {
   let tokens = msg.content.split(" ");
   if (tokens.length < 2) {
-    msg.reply("Usage `.cancel <name>`")
-      .then((amsg) => {
-        msg.delete();
-        setTimeout(() => {
-          amsg.delete();
-        }, 2000);
-      });
+    msg.channel.send(new discord.RichEmbed().setTitle("Usage").setDescription("```.cancel <name>```").setColor(EMBED_NEUTRAL))
     return;
   }
   name = tokens[1];
   if (!games[name]) {
-    msg.delete();
-    msg.reply("No such game " + name)
-      .then((amsg) => {
-        setTimeout(() => {
-          amsg.delete();
-        }, 2000);
-      });
+    msg.channel.send(new discord.RichEmbed().setDescription("I can't find the game `" + name + "`").setColor(EMBED_NEUTRAL))
     return;
   }
   games[name].originalMsg.delete();
@@ -393,13 +324,7 @@ function cancel(msg) {
 function end(msg) {
   let tokens = msg.content.split(" ");
   if (tokens.length < 3 || (tokens[2] != "A" && tokens[2] != "B")) {
-    msg.reply("Usage `.end <name> <team won (A/B)>`")
-      .then((amsg) => {
-        msg.delete();
-        setTimeout(() => {
-          amsg.delete();
-        }, 2000);
-      });
+    msg.channel.send(new discord.RichEmbed().setTitle("Usage").setDescription("```.end <name> <winner: A / B>```").setColor(EMBED_NEUTRAL))
     return;
   }
   name = tokens[1];
