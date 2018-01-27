@@ -200,6 +200,7 @@ function ign(msg) {
       user_data[msg.author.id].rank = RANK_UNRANCKED;
       user_data[msg.author.id].rankNumber = 5;
       module.exports.save();
+      msg.reply("Done!");
       return;
     }
     rankName = match[1].toLowerCase();

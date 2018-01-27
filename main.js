@@ -49,11 +49,14 @@ bot.on("ready", () => {
   onReady = true;
 });
 bot.on('message', msg => {
-  // Don't process if the message is from a bot
+  // @TODO Don't process if the message is from a bot
+
+  // @Cleanup just a quick command to check if the bot is online
   if (msg.content == "%ping") {
     msg.channel.send("Pong!");
     return;
   }
+  
   commands.process(msg);
 });
 bot.login(botToken);
