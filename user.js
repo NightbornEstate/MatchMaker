@@ -66,9 +66,9 @@ function print_profile(author, channel) {
       description = "Some cool stats!";
     } else {
       if (API) {
-        description = "Use the `.ign <ign>` command to set your profile";
+        description = "Use the `%ign <ign>` command to set your profile";
       } else {
-        description = "Use the `.ign <ign> <rank>` command to set your profile";
+        description = "Use the `%ign <ign> <rank>` command to set your profile";
       }
     }
   }
@@ -137,7 +137,7 @@ function print_profile(author, channel) {
  */
 function profile(msg) {
   if (msg.content.trim()
-    .toLowerCase() == ".profile") {
+    .toLowerCase() == "%profile") {
     let member = msg.guild.members.find("id", msg.author.id);
     if (!member) {
       return;
@@ -158,6 +158,9 @@ function ign(msg) {
   let tokens = msg.content.split(" ");
   if (API) {
     // verify with server
+
+    /* This is not working right now */
+
     API.getSummonerByName(tokens[1])
       .then((summoner) => {
         if (!user_data[msg.author.id]) {
@@ -176,7 +179,7 @@ function ign(msg) {
   } else {
     // will manually get from user
     if (tokens.length < 2) {
-      msg.reply("Usage: `.ign <ign> <rank name><rank number>`, rank name can be b/s/g/d/p/m/c and number can be from 1-5");
+      msg.reply("Usage: `%ign <ign> <rank name><rank number>`, rank name can be b/s/g/d/p/m/c and number can be from 1-5");
       return;
     }
     let name = "";
@@ -202,31 +205,24 @@ function ign(msg) {
     rankName = match[1].toLowerCase();
     switch (rankName) {
       case "b":
-      case "bronze":
         rankName = RANK_BRONZE;
         break;
       case "s":
-      case "silver":
         rankName = RANK_SILVER;
         break;
       case "g":
-      case "gold":
         rankName = RANK_GOLD;
         break;
       case "d":
-      case "diamond":
         rankName = RANK_DIAMOND;
         break;
       case "p":
-      case "platinum":
         rankName = RANK_PLATINUM;
         break;
       case "m":
-      case "master":
         rankName = RANK_MASTER;
         break;
       case "c":
-      case "challenger":
         rankName = RANK_C;
         break;
       default:
@@ -235,7 +231,7 @@ function ign(msg) {
     }
     rankNumber = match[2];
     if (!rankNumber) {
-      msg.reply("Usage: `.ign <ign> <rank name><rank number>`, rank name can be b/s/g/d/p/m/c and number can be from 1-5");
+      msg.reply("Usage: `%ign <ign> <rank name><rank number>`, rank name can be b/s/g/d/p/m/c and number can be from 1-5");
       return;
     } else {
       rankNumber = parseInt(rankNumber);
@@ -259,8 +255,8 @@ module.exports = {
     if (apiKey) {
       API = new riotApi.ClassicAPI([apiKey], riotApi.region_e.EUW);
     }
-    commands.reg(".profile", profile, false, "View profile info");
-    commands.reg(".ign", ign, false, "Set in-game name");
+    commands.reg("%profile", profile, false, "View profile info");
+    commands.reg("%ign", ign, false, "Set in-game name");
     if (fs.existsSync(FILE_PATH)) {
       user_data = JSON.parse(fs.readFileSync(FILE_PATH));
     }

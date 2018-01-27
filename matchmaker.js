@@ -22,11 +22,13 @@ function getUsername(author) {
   }
   return name;
 }
-const EMBED_NEUTRAL = 0x36393e;
+const EMBED_NEUTRAL = 0x36393e; // #36393e
+
 const GAME_STATUS_WAITING = 0;
 const GAME_STATUS_STARTED = 1;
 const GAME_STATUS_PENDING = 2;
 const GAME_STATUS_ENDED = 3;
+
 const EVENT_ORGANIZER_ROLES = ["314917626541506570"];
 /**
  * 
@@ -45,14 +47,14 @@ function createEmbed(game) {
   if (game.status == GAME_STATUS_WAITING) {
     embed.setTitle(name + " / Waiting...");
     embed.setColor(0x00FF00); // #00FF00
-    description += "\nTo join `.join " + name + "`\nTo quit `.quit`"
+    description += "\nTo join `%join " + name + "`\nTo quit `%quit`"
   } else if (game.status == GAME_STATUS_STARTED) {
     embed.setTitle(name + " / Started");
     embed.setColor(0x0000FF); // #0000FF
   } else if (game.status == GAME_STATUS_PENDING) {
     embed.setColor(0xFFFF00); // #FFFF00
     embed.setTitle(name + " / Starting in 30 seconds...");
-    description += "\nTo Quit `.quit`"
+    description += "\nTo Quit `%quit`"
   } else if (game.status == GAME_STATUS_ENDED) {
     embed.setTitle(name + " / Ended");
     description += "\nWon: " + game.won;
@@ -126,7 +128,7 @@ function matchMaking(players) {
  */
 function host(msg) {
   if (!user.getUserData(msg.author)) {
-    msg.channel.send(new discord.RichEmbed().setDescription("You must set up a profile before joining a game! Use the `.ign` command to setup a profile").setColor(EMBED_NEUTRAL))
+    msg.channel.send(new discord.RichEmbed().setDescription("You must set up a profile before joining a game! Use the `%ign` command to setup a profile").setColor(EMBED_NEUTRAL))
     return;
   }
   let host = msg.guild.members.find("id", msg.author.id);
@@ -134,7 +136,7 @@ function host(msg) {
   let tokens = msg.content.split(" ");
   if (tokens.length < 3) {
     // If there's not enough arguments then send a usage message and exit
-    msg.channel.send(new discord.RichEmbed().setDescription("Usage `.host <name> <positions>`").setColor(EMBED_NEUTRAL))
+    msg.channel.send(new discord.RichEmbed().setDescription("Usage `%host <name> <positions>`").setColor(EMBED_NEUTRAL))
     return;
   }
   let name = tokens[1];
@@ -151,7 +153,6 @@ function host(msg) {
     .then((msg) => {
       games[name].originalMsg = msg;
     });
-  msg.delete();
 }
 /**
  * 
@@ -160,7 +161,7 @@ function host(msg) {
 function autoJoin(msg) {
   if (!user.getUserData()[msg.author.id]) {
     // If we can't find their profile, tell them and then exit
-    msg.channel.send(new discord.RichEmbed().setDescription("You must set up a profile before joining a game! Use the `.ign` command to setup a profile").setColor(EMBED_NEUTRAL))
+    msg.channel.send(new discord.RichEmbed().setDescription("You must set up a profile before joining a game! Use the `%ign` command to setup a profile").setColor(EMBED_NEUTRAL))
     return;
   }
   let player = msg.guild.members.find("id", msg.author.id);
@@ -202,12 +203,12 @@ function autoJoin(msg) {
  */
 function join(msg) {
   if (!user.getUserData()[msg.author.id]) {
-    msg.channel.send(new discord.RichEmbed().setDescription("You must set up a profile before joining a game! Use the `.ign` command to setup a profile").setColor(EMBED_NEUTRAL))
+    msg.channel.send(new discord.RichEmbed().setDescription("You must set up a profile before joining a game! Use the `%ign` command to setup a profile").setColor(EMBED_NEUTRAL))
     return;
   }
   let tokens = msg.content.split(" ");
   if (tokens.length < 2) {
-    msg.channel.send(new discord.RichEmbed().setTitle("Usage").setDescription("```.join <name>```").setColor(EMBED_NEUTRAL))
+    msg.channel.send(new discord.RichEmbed().setTitle("Usage").setDescription("```%join <name>```").setColor(EMBED_NEUTRAL))
     return;
   }
   name = tokens[1];
@@ -256,18 +257,12 @@ function doJoin(game, msg) {
       for (let i = 0; i < game.positions; i++) {
         notify += " <@" + game.players[i].id + ">";
       }
-      game.notify.channel.send(notify)
-        .then((amsg) => {
-          setTimeout(() => {
-            amsg.delete();
-          }, 5000);
-        });
-      game.notify.delete();
+      game.notify.channel.send(notify);
       let teams = matchMaking(game.players);
       game.teamA = teams[0];
       game.teamB = teams[1];
       game.originalMsg.edit(createEmbed(game));
-    }, 30000);
+    }, 10000);
   }
 }
 /**
@@ -289,14 +284,13 @@ function quit(msg) {
     return;
   }
   if (game.status == GAME_STATUS_STARTED) {
-    msg.channel.send(new discord.RichEmbed().setTitle("Usage").setDescription("Don't leave now! The game has already started.").setColor(EMBED_NEUTRAL))
+    msg.channel.send(new discord.RichEmbed().setTitle("Could not leave!").setDescription("The game has already started.").setColor(EMBED_NEUTRAL))
     return;
   } else if (game.status == GAME_STATUS_PENDING) {
     clearTimeout(game.timeout);
     game.status = GAME_STATUS_WAITING;
   }
   game.players = game.players.filter(item => item !== player);
-  msg.delete();
   game.originalMsg.edit(createEmbed(game));
 }
 /**
@@ -306,7 +300,7 @@ function quit(msg) {
 function cancel(msg) {
   let tokens = msg.content.split(" ");
   if (tokens.length < 2) {
-    msg.channel.send(new discord.RichEmbed().setTitle("Usage").setDescription("```.cancel <name>```").setColor(EMBED_NEUTRAL))
+    msg.channel.send(new discord.RichEmbed().setTitle("Usage").setDescription("```%cancel <name>```").setColor(EMBED_NEUTRAL))
     return;
   }
   name = tokens[1];
@@ -324,7 +318,7 @@ function cancel(msg) {
 function end(msg) {
   let tokens = msg.content.split(" ");
   if (tokens.length < 3 || (tokens[2] != "A" && tokens[2] != "B")) {
-    msg.channel.send(new discord.RichEmbed().setTitle("Usage").setDescription("```.end <name> <winner: A / B>```").setColor(EMBED_NEUTRAL))
+    msg.channel.send(new discord.RichEmbed().setTitle("Usage").setDescription("```%end <name> <winner: A / B>```").setColor(EMBED_NEUTRAL))
     return;
   }
   name = tokens[1];
@@ -350,15 +344,15 @@ function list(msg) {
 }
 module.exports = {
   load: function () {
-    commands.reg(".join", join, false, "Join a game");
-    commands.reg(".j", join, false, "Join a game");
-    commands.reg(".autojoin", autoJoin, false, "Auto Join a game");
-    commands.reg(".aj", autoJoin, false, "Auto Join a game");
-    commands.reg(".quit", quit, false, "Quit a pending game");
-    commands.reg(".q", quit, false, "Quit a pending game");
-    commands.reg(".host", host, EVENT_ORGANIZER_ROLES, "Host a game");
-    commands.reg(".list", list, EVENT_ORGANIZER_ROLES, "List all games");
-    commands.reg(".cancel", cancel, EVENT_ORGANIZER_ROLES, "Cancel a game");
-    commands.reg(".end", end, EVENT_ORGANIZER_ROLES, "End a game");
+    commands.reg("%join", join, false, "Join a game");
+    commands.reg("%j", join, false, "Join a game");
+    commands.reg("%autojoin", autoJoin, false, "Auto Join a game");
+    commands.reg("%aj", autoJoin, false, "Auto Join a game");
+    commands.reg("%quit", quit, false, "Quit a pending game");
+    commands.reg("%q", quit, false, "Quit a pending game");
+    commands.reg("%host", host, EVENT_ORGANIZER_ROLES, "Host a game");
+    commands.reg("%list", list, EVENT_ORGANIZER_ROLES, "List all games");
+    commands.reg("%cancel", cancel, EVENT_ORGANIZER_ROLES, "Cancel a game");
+    commands.reg("%end", end, EVENT_ORGANIZER_ROLES, "End a game");
   }
 }
