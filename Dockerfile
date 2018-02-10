@@ -4,4 +4,4 @@ COPY package.json /app
 RUN npm install
 COPY . /app
 
-CMD node preload.js
+CMD node preload.js && node main.js
