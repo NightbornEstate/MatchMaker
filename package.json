@@ -9,6 +9,7 @@
   "license": "ISC",
   "dependencies": {
     "discord.js": "^11.2.1",
+    "mongodb": "^3.0.2",
     "riot-api-nodejs": "^2.1.0",
     "sequelize": "^4.31.2"
   },

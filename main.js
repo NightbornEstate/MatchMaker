@@ -10,28 +10,21 @@ const bot = new Discord.Client();
 var botConfig = JSON.parse(fs.readFileSync('config/config.json', 'utf-8'));
 var botToken = botConfig.bot_token;
 var riotApiKey = botConfig.riot_api_key;
-var onReady = false;
-if (process.platform === "win32") {
-    var rl = require("readline")
-        .createInterface({
-            input: process.stdin,
-            output: process.stdout
-        });
-    rl.on("SIGINT", function() {
-        process.emit("SIGINT");
-    });
-}
-process.on("SIGINT", function() {
-    console.log("Disconnecting bot..")
-    saveAll();
-    process.exit();
-});
+var onReady = false
+console.log("starting")
 
 function saveAll() {
     behaviour.save();
     user.save();
     bot.destroy();
 }
+setInterval(() => {
+    user.loadData();
+    setTimeout(user.save, 500);
+    setTimeout(behaviour.save, 100);
+    setTimeout(behaviour.load, 1000);
+
+}, 1000 * 20)
 bot.on("ready", () => {
     if (onReady) {
         console.log("Reconnected!");
