@@ -1,3 +1,4 @@
+console.log("o/")
 const Discord = require("discord.js");
 const fs = require("fs");
 const behaviour = require("./utils/behaviour");
@@ -8,6 +9,7 @@ const exec = require('child_process')
     .exec;
 const bot = new Discord.Client();
 var botConfig = JSON.parse(fs.readFileSync('config/config.json', 'utf-8'));
+console.log("read")
 var botToken = botConfig.bot_token;
 var riotApiKey = botConfig.riot_api_key;
 var onReady = false
